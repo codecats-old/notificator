@@ -1,5 +1,11 @@
 <?php defined('SYSPATH') OR die('No direct script access.');
 
+/**
+ * Makes flag in session and set how log flag is setted.
+ * 
+ * @author t
+ *
+ */
 class Blinker_Blinker{
 	/**
 	 * Time duration for notification blinks
@@ -7,7 +13,7 @@ class Blinker_Blinker{
 	 * 60*2 = 120 : 2 minutes
 	 * debug: 20s
 	 */
-	const DURATION	= 20;
+	const DURATION	= 120;
 	
 	/**
 	 * Session key
@@ -16,6 +22,13 @@ class Blinker_Blinker{
 	 */
 	protected static $KEY = 'NotificatiorKEY';
 	
+	/**
+	 * Set given value in session 
+	 * 
+	 * @param string $key
+	 * @param mixed $value
+	 * @return Blinker_Blinker
+	 */
 	public function __set($key, $value)
 	{
 		$session = Session::instance()->get(self::$KEY);
@@ -23,6 +36,13 @@ class Blinker_Blinker{
 		Session::instance()->set(self::$KEY, $session);
 		return $this;
 	}
+	
+	/**
+	 * Get parameter stored in session
+	 * 
+	 * @param unknown $key
+	 * @return mixed
+	 */
 	public function __get($key)
 	{
 		$session = Session::instance()->get(self::$KEY);
@@ -61,18 +81,30 @@ class Blinker_Blinker{
 			return TRUE;
 		}
 	}
-	
+
+	/**
+	 * Force set blink status to FALSE
+	 */
 	public static function stop_blink ()
 	{
 		self::update_status(FALSE);
 	}
 	
+	/**
+	 * Return session as array
+	 * @return mixed
+	 */
 	public static function get_status ()
 	{
-		return Session::instance()->get(self::$KEY);
+		$session = Session::instance()->get(self::$KEY);
+		$session['from'] = isset($session['from']) ? $session['from'] : NULL;
+		$session['to'] = isset($session['to']) ? $session['to'] : NULL;
+		$session['active'] = isset($session['active']) ? $session['active'] : FALSE;
+		return $session;
 	}
 	
 	/**
+	 * Sets frag. If no parameters given time is setted from current time to currnet time + DURATION 
 	 *
 	 * @param int $from_time
 	 * @param int $to_time
@@ -100,6 +132,7 @@ class Blinker_Blinker{
 	}
 	
 	/**
+	 * Force sets active to given value
 	 *
 	 * @param boolean $active
 	 */
@@ -118,8 +151,8 @@ class Blinker_Blinker{
 		$session = Session::instance()->get(self::$KEY);
 		$now = time();
 		$active = isset($session['active']) ? $session['active'] : FALSE;
-		$to_time = isset($session['to']) ? $session['to'] : 0;
-		$from_time = isset($session['from']) ? $session['from'] : 0;
+		$to_time = isset($session['to']) ? $session['to'] : NULL;
+		$from_time = isset($session['from']) ? $session['from'] : NULL;
 		if ($to_time < $now)
 		{
 			$active = FALSE;
@@ -131,5 +164,12 @@ class Blinker_Blinker{
 				'from'		=> $from_time,
 				'to' 		=> $to_time
 		);
+	}
+	/**
+	 * Deletes session
+	 */
+	public static function clear()
+	{
+		Session::instance()->delete(self::$KEY);
 	}
 }
