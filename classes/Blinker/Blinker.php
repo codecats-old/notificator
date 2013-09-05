@@ -48,6 +48,7 @@ class Blinker_Blinker{
 		$session = Session::instance()->get(self::$KEY);
 		return $session[$key];
 	}
+
 	/**
 	 * Checks if user already saw the message but maybe have ommited it
 	 * @return boolean
